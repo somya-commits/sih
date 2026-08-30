@@ -1,0 +1,61 @@
+{
+  "project": "AI FloodGuard — Flash Flood Prediction & Early Warning (SIH)",
+  "note": "Demo personas used across the role-based UI and scenario demonstrations. All names, numbers and emails are fictional placeholders for the prototype.",
+  "personas": [
+    {
+      "id": "admin-01",
+      "name": "Arjun Dev",
+      "role": "System Administrator",
+      "agency": "District IT Cell, Chamoli",
+      "avatar": "🛡️",
+      "email": "admin@floodguard-sih.demo",
+      "phone": "+91-90000-00001",
+      "bio": "Manages the sensor network, calibration schedules and platform health for the pilot district."
+    },
+    {
+      "id": "dma-01",
+      "name": "Priya Rawat",
+      "role": "District Disaster Management Officer",
+      "agency": "DDMA Chamoli (Disaster Management Authority)",
+      "avatar": "🏛️",
+      "email": "dma@floodguard-sih.demo",
+      "phone": "+91-90000-00002",
+      "bio": "Authorises early-warning broadcasts, evacuation orders and inter-agency coordination during flood events."
+    },
+    {
+      "id": "rescue-01",
+      "name": "Rakesh Negi",
+      "role": "Rescue Team Lead (SDRF)",
+      "agency": "SDRF Joshimath",
+      "avatar": "🚑",
+      "email": "sdrf@floodguard-sih.demo",
+      "phone": "+91-90000-00003",
+      "bio": "Leads the field rescue unit — sees live risk zones, shelter capacity and evacuation routes from the dashboard."
+    },
+    {
+      "id": "public-01",
+      "name": "Mahesh Singh",
+      "role": "Resident (Read-only User)",
+      "agency": "Community — Joshimath",
+      "avatar": "👥",
+      "email": "citizen@floodguard-sih.demo",
+      "phone": "+91-90000-00004",
+      "bio": "Receives flash-flood alerts and safety instructions on the public view; no control actions."
+    },
+    {
+      "id": "public-02",
+      "name": "Ganga Devi",
+      "role": "School Teacher — Helang",
+      "agency": "Government Inter College",
+      "avatar": "👩‍🏫",
+      "email": "school@floodguard-sih.demo",
+      "phone": "+91-90000-00005",
+      "bio": "Community early-adopter who helped map local flood-prone areas and evacuation routes."
+    }
+  ],
+  "scenario_personas": {
+    "heavy_rain": "Heavy Rain — catchment soaking, river rising, public advised to stay alert.",
+    "flood_warning": "Flood Warning — DMA issues sector alerts, SDRF prepositioned.",
+    "critical_flood": "Critical Flood — evacuation order, shelters opened, NDRF requested."
+  }
+}

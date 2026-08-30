@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI FloodGuard — Flash Flood Prediction & Early Warning</title>
+<meta name="description" content="AI-powered flash flood prediction and early warning system for hilly regions — SIH prototype">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .role-item{display:flex;gap:10px;align-items:center;padding:9px 11px;border-radius:10px;cursor:pointer;transition:.15s}
+  .role-item:hover{background:var(--panel-2)}
+  .role-item.active{background:var(--accent-soft)}
+  .role-item .r-emoji{font-size:19px;width:28px;text-align:center}
+  .role-item .r-name{font-size:12.5px;font-weight:700;line-height:1.2}
+  .role-item .r-role{font-size:10.5px;color:var(--muted)}
+  .dot-sep{width:4px;height:4px;border-radius:50%;background:var(--muted-2);display:inline-block;margin:0 6px;vertical-align:middle}
+</style>
+</head>
+<body data-page="dashboard">
+<!-- ============ HEADER ============ -->
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-logo">🌊</div>
+    <div>
+      <div class="brand-name">AI FloodGuard</div>
+      <div class="brand-sub">Flash Flood Early Warning · Himalayan Districts</div>
+    </div>
+  </div>
+  <div class="sys-status" id="sysStatus"><span class="dot"></span>All Systems Operational</div>
+  <div class="header-spacer"></div>
+  <div class="clockbox">
+    <div class="clock-time" id="clockTime">--:--:--</div>
+    <div class="clock-date" id="clockDate">—</div>
+  </div>
+  <button class="icon-btn" id="themeBtn" title="Toggle light/dark theme">🌙</button>
+  <div style="position:relative">
+    <button class="icon-btn" id="bellBtn" title="Notifications">🔔<span class="badge" id="bellBadge" style="display:none">0</span></button>
+    <div class="notif-drop" id="notifDrop">
+      <div class="notif-head">Notifications & Alerts</div>
+      <div id="notifList"></div>
+    </div>
+  </div>
+  <div id="profileWrap" style="position:relative">
+    <div class="profile" id="profileBtn">
+      <div class="avatar" id="avatar">🛡️</div>
+      <div>
+        <div class="profile-name" id="profileName">A. Dev</div>
+        <div class="profile-role" id="profileRole">Administrator</div>
+      </div>
+      <span class="muted small">▾</span>
+    </div>
+    <div class="notif-drop" id="roleMenu" style="right:0;left:auto;width:280px">
+      <div class="notif-head">Switch Role (demo)</div>
+      <div class="role-item active" data-role="admin"><span class="r-emoji">🛡️</span><div><div class="r-name">Administrator</div><div class="r-role">Full system control</div></div></div>
+      <div class="role-item" data-role="dma"><span class="r-emoji">🏛️</span><div><div class="r-name">Disaster Management Authority</div><div class="r-role">Alerts, evacuation & media</div></div></div>
+      <div class="role-item" data-role="rescue"><span class="r-emoji">🚑</span><div><div class="r-name">Rescue Team</div><div class="r-role">SDRF / NDRF field unit</div></div></div>
+      <div class="role-item" data-role="public"><span class="r-emoji">👥</span><div><div class="r-name">Public / User</div><div class="r-role">Read-only community view</div></div></div>
+    </div>
+  </div>
+</header>
+<!-- ============ NAV ============ -->
+<nav class="app-nav">
+  <a href="index.html" data-nav="dashboard"><span class="nav-ico">📊</span>Dashboard</a>
+  <a href="sensors.html" data-nav="sensors"><span class="nav-ico">📡</span>Sensors</a>
+  <a href="history.html" data-nav="history"><span class="nav-ico">📈</span>Historical Data</a>
+  <a href="admin.html" data-nav="admin" data-role-only="admin"><span class="nav-ico">🛡️</span>Admin</a>
+</nav>
+
+<main class="page">
+  <!-- ⚠️ EARLY WARNING BANNER -->
+  <section class="warning-banner" id="warningBanner" role="alert" aria-live="assertive">
+    <div class="wb-icon">⚠️</div>
+    <div style="flex:1">
+      <div class="wb-title" id="wbTitle">⚠ FLASH FLOOD WARNING</div>
+      <div class="wb-reason" id="wbReason">Critical water-level increase detected.</div>
+      <div class="wb-meta">
+        <span class="wb-chip">📍 Location: <span id="wbLoc">—</span></span>
+        <span class="wb-chip">🚨 Risk: <span id="wbLevel">—</span></span>
+        <span class="wb-chip">🕐 Time: <span id="wbTime">—</span></span>
+        <span class="wb-chip">✅ Action: <span id="wbAction">—</span></span>
+      </div>
+      <div class="wb-actions">
+        <button class="btn btn-danger js-send-alert">📢 Send Alert</button>
+        <button class="btn btn-warn" data-modal-open="viewAlert">🔍 View Details</button>
+        <button class="btn" data-modal-open="emergency">🆘 Emergency Instructions</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Emergency contact strip -->
+  <div class="contact-strip">
+    <div class="contact-chip"><div class="c-ico">📞</div><div><div class="c-lbl">National Emergency</div><div class="c-val">112</div></div></div>
+    <div class="contact-chip"><div class="c-ico">🆘</div><div><div class="c-lbl">Disaster Helpline</div><div class="c-val">1078</div></div></div>
+    <div class="contact-chip"><div class="c-ico blue">🚑</div><div><div class="c-lbl">Ambulance</div><div class="c-val">108</div></div></div>
+    <div class="contact-chip"><div class="c-ico green">🚨</div><div><div class="c-lbl">Police</div><div class="c-val">100</div></div></div>
+    <div class="contact-chip"><div class="c-ico">🏛️</div><div><div class="c-lbl">DMA Control Room</div><div class="c-val">1070</div></div></div>
+  </div>
+
+  <!-- ============ AI PREDICTION HERO ============ -->
+  <div class="section-title"><span class="st-ico">🤖</span>AI Flood Risk Prediction <small>· updates live from sensor telemetry</small></div>
+
+  <section class="risk-hero">
+    <div class="gauge-wrap" id="gaugeWrap"></div>
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span class="risk-level-badge lv-LOW" id="riskBadge"><span class="rdot"></span>LOW RISK</span>
+        <div class="levels-key">
+          <span class="lv-LOW">0–30 LOW</span><span class="lv-MODERATE">31–60 MODERATE</span>
+          <span class="lv-HIGH">61–80 HIGH</span><span class="lv-CRITICAL">81–100 CRITICAL</span>
+        </div>
+      </div>
+      <div class="risk-metrics">
+        <div class="risk-metric"><div class="rm-lbl">🎯 Prediction Confidence</div><div class="rm-val" id="metricConfidence">—</div><div class="rm-sub">model agreement</div></div>
+        <div class="risk-metric"><div class="rm-lbl">🌊 Flood Probability (6 h)</div><div class="rm-val" id="metricProbability">—</div><div class="rm-sub">P(flood) estimated</div></div>
+        <div class="risk-metric"><div class="rm-lbl">⏱ Estimated Warning Time</div><div class="rm-val" id="metricEta">—</div><div class="rm-sub">before impact</div></div>
+        <div class="risk-metric"><div class="rm-lbl">🧠 Model</div><div class="rm-val" style="font-size:14px" id="metricModel">—</div><div class="rm-sub">DEMO AI logic</div></div>
+        <div class="risk-metric"><div class="rm-lbl">🕐 Last Analysis</div><div class="rm-val" style="font-size:14px" id="metricTime">—</div><div class="rm-sub">generated at</div></div>
+      </div>
+      <div class="reason-line" id="reasonLine"><span class="r-ico">🧠</span> Analysing sensor telemetry…</div>
+    </div>
+  </section>
+
+  <!-- AI explanation -->
+  <div class="panel mt-12">
+    <div class="ai-expl">
+      <span class="ai-tag">AI Insight · DEMO</span>
+      <div class="ai-head">🤖 Why is the risk changing?</div>
+      <div class="ai-body small muted">Reading sensor streams…</div>
+      <div class="ai-factors ai-chips"></div>
+    </div>
+  </div>
+
+  <!-- ============ SENSOR MONITORING ============ -->
+  <div class="section-title"><span class="st-ico">📡</span>Real-Time Sensor Monitoring <small>· 7 IoT stations across the Alaknanda catchment</small></div>
+  <div class="sensor-grid" id="sensorCards"></div>
+
+  <!-- ============ LIVE ANALYTICS ============ -->
+  <div class="section-title"><span class="st-ico">📈</span>Live Analytics <small>· last 60 minutes</small></div>
+  <div class="grid g2">
+    <div class="panel">
+      <div class="panel-title"><span class="t-ico">🌧️</span>Rainfall Intensity <span class="spacer"></span><span class="panel-sub">mm/hr</span></div>
+      <div class="chart-box"><canvas id="rainChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="t-ico">🌊</span>River Water Level <span class="spacer"></span><span class="panel-sub">meters · danger &gt; 4.5 m</span></div>
+      <div class="chart-box"><canvas id="waterChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="t-ico">🪨</span>Soil Moisture <span class="spacer"></span><span class="panel-sub">%</span></div>
+      <div class="chart-box"><canvas id="soilChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="t-ico">🚨</span>Flood Risk Score <span class="spacer"></span><span class="panel-sub">0–100</span></div>
+      <div class="chart-box"><canvas id="riskChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ============ MAP ============ -->
+  <div class="section-title"><span class="st-ico">🗺️</span>Location-Based Risk Map <small>· Alaknanda basin · Chamoli, Uttarakhand</small></div>
+  <div class="map-wrap">
+    <div id="floodMap"></div>
+    <div class="map-legend">
+      <div class="lg-title">Map Legend</div>
+      <div class="lg-row"><span class="lg-dot" style="background:#22d3ee"></span> IoT Sensor</div>
+      <div class="lg-row"><span class="lg-dot" style="background:#8ea0bd"></span> Village / Community</div>
+      <div class="lg-row"><svg viewBox="0 0 12 12"><line x1="1" y1="6" x2="11" y2="6" stroke="#22d3ee" stroke-width="2.5" stroke-dasharray="3 3"/></svg> River reach</div>
+      <div class="lg-row"><svg viewBox="0 0 12 12"><rect x="2" y="3" width="8" height="6" rx="1.5" fill="#38bdf8" fill-opacity=".35" stroke="#38bdf8" stroke-width="1.2"/></svg> Flood-prone area</div>
+      <div class="lg-row"><span class="lg-dot" style="background:#fbbf24"></span> Moderate zone</div>
+      <div class="lg-row"><span class="lg-dot" style="background:#f87171"></span> High zone</div>
+      <div class="lg-row"><span class="lg-dot" style="background:#ef4444"></span> Critical (live)</div>
+    </div>
+  </div>
+
+  <!-- ============ SIMULATION MODE ============ -->
+  <div class="section-title" data-role-show="dma"><span class="st-ico">🎛️</span>Simulation Mode <small>· drive the demo without physical sensors · SIH</small></div>
+  <div class="panel sim-panel mt-8" id="simPanel" data-role-show="dma">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title"><span class="t-ico">🎛️</span>Sensor Simulation Controls</div>
+        <div class="panel-sub">Slider input follows the exact same path as real ESP32 telemetry → AI prediction → alerts</div>
+      </div>
+      <label class="sim-toggle"><input type="checkbox" id="autoSim"><span class="switch"></span>Auto-sim drift</label>
+    </div>
+    <div class="sim-grid"></div>
+    <div class="sim-presets">
+      <span class="small muted" style="align-self:center;font-weight:700">SCENARIOS:</span>
+      <button class="btn btn-sm" data-preset="normal">🌤 Normal Conditions</button>
+      <button class="btn btn-sm" data-preset="heavy">🌧 Heavy Rain</button>
+      <button class="btn btn-sm" data-preset="warning">🚨 Flood Warning</button>
+      <button class="btn btn-sm btn-danger" data-preset="critical">☠️ Critical Flood</button>
+      <span class="spacer"></span>
+      <button class="btn btn-sm btn-ghost" id="simReset">↺ Reset to Baseline</button>
+    </div>
+    <div class="sim-help">💡 Tip: move any slider and watch the risk gauge, AI explanation, charts and map update instantly. Presets jump the whole catchment into a scenario — perfect for the judges' demo.</div>
+  </div>
+
+  <!-- ============ EARLY WARNING / ALERTS ============ -->
+  <div class="section-title"><span class="st-ico">📢</span>Early Warning Center <small>· alerts & broadcast channels</small></div>
+  <div class="grid" style="grid-template-columns:2fr 1fr">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title"><span class="t-ico">🔔</span>Alert Feed</div>
+        <button class="btn btn-danger btn-sm js-send-alert">📢 Send Alert</button>
+      </div>
+      <div id="alertsFeed"><div class="empty-state">Loading alerts…</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="t-ico">📡</span>Broadcast Channels</div>
+      <div class="small muted" style="margin-bottom:8px">Simulated delivery — swap senders for real SMS/FCM/Email APIs (js/alerts.js).</div>
+      <div class="alert-item"><div class="a-ico info">📱</div><div><div class="a-title">SMS Alert</div><div class="a-text">Text to registered residents</div></div></div>
+      <div class="alert-item"><div class="a-ico info">🔔</div><div><div class="a-title">Mobile Push</div><div class="a-text">App & web notifications</div></div></div>
+      <div class="alert-item"><div class="a-ico info">📧</div><div><div class="a-title">Email</div><div class="a-text">Officials, schools, media</div></div></div>
+      <div class="alert-item"><div class="a-ico info">🏛️</div><div><div class="a-title">Local Authority</div><div class="a-text">DMA control-room webhook</div></div></div>
+      <div id="channelCounts" class="small muted mt-8"></div>
+    </div>
+  </div>
+
+  <!-- ============ EMERGENCY RESPONSE ============ -->
+  <div class="section-title"><span class="st-ico">🚑</span>Emergency Response <small>· shelters, hospitals, rescue coordination</small></div>
+  <div class="emergency-grid">
+    <div class="emer-card">
+      <div class="ec-ico" style="background:var(--success-soft);color:var(--success)">🏠</div>
+      <h4>Safe Shelters</h4>
+      <div class="ec-row"><span>Govt. Inter College, Joshimath</span><b id="occ1">210 / 500</b></div>
+      <div class="ec-row"><span>Community Hall, Tapovan</span><b id="occ2">95 / 300</b></div>
+      <div class="ec-row"><span>ITBP Camp, Pandukeshwar</span><b id="occ3">READY</b></div>
+      <div class="rescue-status">● Shelters: OPEN · capacity 38%</div>
+    </div>
+    <div class="emer-card">
+      <div class="ec-ico" style="background:var(--danger-soft);color:var(--danger)">🏥</div>
+      <h4>Hospitals</h4>
+      <div class="ec-row"><span>District Hospital Chamoli</span><b>☎ 01372-252188</b></div>
+      <div class="ec-row"><span>PHC Joshimath</span><b>☎ 01389-222144</b></div>
+      <div class="ec-row"><span>Beds available</span><b>42 / 160</b></div>
+    </div>
+    <div class="emer-card">
+      <div class="ec-ico" style="background:var(--accent-soft);color:var(--accent)">👮</div>
+      <h4>Police & Control Rooms</h4>
+      <div class="ec-row"><span>Joshimath PS</span><b>☎ 01389-222233</b></div>
+      <div class="ec-row"><span>Chamoli Control Room</span><b>☎ 01372-252333</b></div>
+      <div class="ec-row"><span>Emergency</span><b>112</b></div>
+    </div>
+    <div class="emer-card">
+      <div class="ec-ico" style="background:var(--warn-soft);color:var(--warn)">🗺️</div>
+      <h4>Evacuation Routes</h4>
+      <div class="evac-route">🟢 Route A — Helang → Joshimath NH-7 <b>6.2 km</b></div>
+      <div class="evac-route">🟢 Route B — Tapovan → ITBP Camp <b>3.4 km</b></div>
+      <div class="evac-route">🟡 Route C — Sankri → Gwaldam <b>11 km</b></div>
+    </div>
+    <div class="emer-card" id="emergencyControls" data-role-show="dma">
+      <div class="ec-ico" style="background:var(--danger-soft);color:var(--danger)">🚁</div>
+      <h4>Rescue Teams</h4>
+      <div class="ec-row"><span>SDRF Joshimath (24)</span><b>Active</b></div>
+      <div class="ec-row"><span>NDRF 11th Bn (46)</span><b>35 min ETA</b></div>
+      <div class="ec-row"><span>Medical team (30)</span><b>Active</b></div>
+      <div id="rescueStatusText" class="rescue-status">● All teams on standby, ready in &lt; 5 min</div>
+    </div>
+    <div class="emer-card" style="background:linear-gradient(135deg,var(--critical-soft),transparent);border-color:rgba(239,68,68,.4)" id="emergencyControls2" data-role-show="dma">
+      <div class="ec-ico" style="background:var(--critical-soft);color:var(--critical)">📣</div>
+      <h4>Emergency Command</h4>
+      <p class="small muted" style="margin-bottom:10px">Broadcast mass-evacuation order, open all shelters and deploy SDRF/NDRF teams (demo simulation).</p>
+      <button class="btn btn-danger btn-lg" id="evacBtn" style="width:100%;justify-content:center">🚨 START EVACUATION</button>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <b>AI FloodGuard</b> — AI-Powered Flash Flood Prediction & Early Warning System for Hilly Regions<br>
+    Smart India Hackathon prototype · Sensors & risk data are simulated · Alaknanda Basin, Chamoli, Uttarakhand (demo deployment)
+  </footer>
+</main>
+
+<!-- ============ MODALS ============ -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal modal-content" id="modal-sendAlert" style="display:none">
+    <button class="m-close" data-modal-close>✕</button>
+    <h3>📢 Dispatch Alert <span class="small muted mono sa-alert-id"></span></h3>
+    <p class="small muted"><b class="sa-alert-title"></b> — <span class="sa-alert-loc"></span></p>
+    <div class="divider"></div>
+    <div class="form-field">
+      <label>Delivery channels (simulated)</label>
+      <label class="sim-toggle" style="margin-bottom:8px"><input type="checkbox" value="sms" checked> 📱 SMS to registered residents</label><br>
+      <label class="sim-toggle" style="margin-bottom:8px"><input type="checkbox" value="push" checked> 🔔 Mobile push notification</label><br>
+      <label class="sim-toggle" style="margin-bottom:8px"><input type="checkbox" value="email" checked> 📧 Email to officials</label><br>
+      <label class="sim-toggle"><input type="checkbox" value="authority" checked> 🏛️ Local authority (DMA control room)</label>
+    </div>
+    <div class="flex" style="justify-content:flex-end;margin-top:8px">
+      <button class="btn" data-modal-close>Cancel</button>
+      <button class="btn btn-danger" id="modalSendGo">🚀 Send Alerts</button>
+    </div>
+  </div>
+
+  <div class="modal modal-content" id="modal-viewAlert" style="display:none">
+    <button class="m-close" data-modal-close>✕</button>
+    <h3>⚠️ Alert Details <span class="small muted mono" id="viewAlertId"></span></h3>
+    <div class="divider"></div>
+    <div class="form-field"><label>Warning</label><div id="viewAlertTitle" style="font-weight:800;font-size:16px">—</div></div>
+    <div class="form-row">
+      <div class="form-field"><label>Location</label><div id="viewAlertLoc" class="small">—</div></div>
+      <div class="form-field"><label>Risk level</label><div id="viewAlertLevel" style="font-weight:800">—</div></div>
+    </div>
+    <div class="form-field"><label>Time of alert</label><div id="viewAlertTime" class="small">—</div></div>
+    <div class="form-field"><label>Reason for warning</label><div id="viewAlertReason" class="small">—</div></div>
+    <div class="form-field"><label>Recommended action</label><div id="viewAlertAction" class="small">—</div></div>
+    <div class="flex" style="justify-content:flex-end">
+      <button class="btn btn-danger js-send-alert">📢 Send Alert</button>
+      <button class="btn" data-modal-close>Close</button>
+    </div>
+  </div>
+
+  <div class="modal modal-content" id="modal-evacConfirm" style="display:none">
+    <button class="m-close" data-modal-close>✕</button>
+    <h3>🏃 Start Evacuation?</h3>
+    <p class="small muted">Current risk is below HIGH — evacuation is optional. Confirming broadcasts the order to shelters, SDRF/NDRF teams and residents (demo simulation).</p>
+    <div class="flex" style="justify-content:flex-end;margin-top:12px">
+      <button class="btn" data-modal-close>Cancel</button>
+      <button class="btn btn-danger" id="evacYes">Yes, Start Evacuation</button>
+    </div>
+  </div>
+
+  <div class="modal modal-content" id="modal-emergency" style="display:none">
+    <button class="m-close" data-modal-close>✕</button>
+    <h3>🆘 Emergency Instructions</h3>
+    <ol style="line-height:2.1;padding-left:20px;font-size:13.5px">
+      <li>Move to the highest floor or nearest shelter immediately.</li>
+      <li>Never walk, drive or wade through floodwater.</li>
+      <li>Disconnect electrical appliances and turn off gas cylinders.</li>
+      <li>Carry torch, first-aid kit, drinking water and important documents.</li>
+      <li>Follow SDRF, NDRF and local administration instructions only.</li>
+      <li>Call <b>112</b> (National Emergency) or <b>1078</b> (Disaster Helpline) if trapped.</li>
+    </ol>
+    <div class="divider"></div>
+    <p class="small muted">Broadcast to villagers via siren, SMS and voice calls in the affected sector.</p>
+  </div>
+</div>
+<div id="toastWrap"></div>
+
+<script src="js/vendor/chart.umd.min.js"></script>
+<script src="js/vendor/leaflet.js"></script>
+<script src="js/mockApi.js"></script>
+<script src="js/aiModel.js"></script>
+<script src="js/alerts.js"></script>
+<script src="js/simulation.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/pages-dashboard.js"></script>
+<script src="js/pages-other.js"></script>
+</body>
+</html>
