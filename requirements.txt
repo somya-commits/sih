@@ -1,0 +1,8 @@
+# backend-example/requirements.txt
+fastapi
+uvicorn
+joblib
+numpy
+scikit-learn
+pandas
+paho-mqtt
